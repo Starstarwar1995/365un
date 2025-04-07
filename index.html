@@ -1,1 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Unexpected Growth - Flip Book</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://www.turnjs.com/lib/turn.min.js"></script>
+  <style>
+    body {
+      background: #111;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    #flipbook {
+      width: 800px;
+      height: 600px;
+    }
+    #flipbook .page {
+      background: white;
+      color: black;
+      text-align: center;
+      line-height: 600px;
+      font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="flipbook">
+    <div class="page">Loading PDF...</div>
+  </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+  <script>
+    const url = 'https://github.com/Starstarwar1995/365un/raw/main/Unexpected%20Growth.pdf';
+
+    const renderPDF = async () => {
+      const pdf = await pdfjsLib.getDocument(url).promise;
+      const flipbook = $('#flipbook');
+      flipbook.html(''); // clear loading message
+
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 1.5 });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const context = canvas.getContext('2d');
+
+        await page.render({ canvasContext: context, viewport }).promise;
+
+        const wrapper = $('<div class="page"></div>');
+        wrapper.append(canvas);
+        flipbook.append(wrapper);
+      }
+
+      flipbook.turn({
+        width: 800,
+        height: 600,
+        autoCenter: true
+      });
+    };
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+
+    renderPDF();
+  </script>
+</body>
+</html>
